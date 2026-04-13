@@ -1,7 +1,7 @@
-# 中文注释：
-# 本编排用于商用RAN接入的双UPF VoNR场景。
-# - eUPF承载internet APN
-# - 原生Open5GS UPF承载ims APN
+﻿# 涓枃娉ㄩ噴锛?
+# 鏈紪鎺掔敤浜庡晢鐢≧AN鎺ュ叆鐨勫弻UPF VoNR鍦烘櫙銆?
+# - eUPF鎵胯浇internet APN
+# - 鍘熺敓Open5GS UPF鎵胯浇ims APN
 services:
   mongo:
     image: mongo:6.0
@@ -21,7 +21,7 @@ services:
       default:
         ipv4_address: ${MONGO_IP}
   webui:
-    image: docker_open5gs
+    image: ghcr.io/herlesupreeth/docker_open5gs:master
     container_name: webui
     depends_on:
       - mongo
@@ -41,7 +41,7 @@ services:
       default:
         ipv4_address: ${WEBUI_IP}
   nrf:
-    image: docker_open5gs
+    image: ghcr.io/herlesupreeth/docker_open5gs:master
     container_name: nrf
     env_file:
       - .custom_env
@@ -58,7 +58,7 @@ services:
       default:
         ipv4_address: ${NRF_IP}
   scp:
-    image: docker_open5gs
+    image: ghcr.io/herlesupreeth/docker_open5gs:master
     depends_on:
       - nrf
     container_name: scp
@@ -77,7 +77,7 @@ services:
       default:
         ipv4_address: ${SCP_IP}
   ausf:
-    image: docker_open5gs
+    image: ghcr.io/herlesupreeth/docker_open5gs:master
     depends_on:
       - nrf
       - scp
@@ -97,7 +97,7 @@ services:
       default:
         ipv4_address: ${AUSF_IP}
   udr:
-    image: docker_open5gs
+    image: ghcr.io/herlesupreeth/docker_open5gs:master
     depends_on:
       - nrf
       - scp
@@ -118,7 +118,7 @@ services:
       default:
         ipv4_address: ${UDR_IP}
   udm:
-    image: docker_open5gs
+    image: ghcr.io/herlesupreeth/docker_open5gs:master
     depends_on:
       - nrf
       - scp
@@ -138,7 +138,7 @@ services:
       default:
         ipv4_address: ${UDM_IP}
   smf:
-    image: docker_open5gs
+    image: ghcr.io/herlesupreeth/docker_open5gs:master
     depends_on:
       - nrf
       - scp
@@ -167,7 +167,7 @@ services:
       default:
         ipv4_address: ${SMF_IP}
   eupf:
-    # 中文注释：按照 eUPF 官方推荐，直接使用官方镜像
+    # 涓枃娉ㄩ噴锛氭寜鐓?eUPF 瀹樻柟鎺ㄨ崘锛岀洿鎺ヤ娇鐢ㄥ畼鏂归暅鍍?
     image: ghcr.io/edgecomllc/eupf:main
     depends_on:
       - nrf
@@ -177,7 +177,7 @@ services:
     env_file:
       - .custom_env
     environment:
-      # 中文注释：以下变量采用官方文档中的环境变量方式
+      # 涓枃娉ㄩ噴锛氫互涓嬪彉閲忛噰鐢ㄥ畼鏂规枃妗ｄ腑鐨勭幆澧冨彉閲忔柟寮?
       - GIN_MODE=release
       - UPF_INTERFACE_NAME=eth0
       - UPF_XDP_ATTACH_MODE=generic
@@ -197,7 +197,7 @@ services:
       - "9091/tcp"
       - "8181/tcp"
     ports:
-      # 中文注释：N3端口绑定到ens38(10.10.10.101)，gNB通过此IP发送internet GTP-U
+      # 涓枃娉ㄩ噴锛歂3绔彛缁戝畾鍒癳ns38(10.10.10.101)锛実NB閫氳繃姝P鍙戦€乮nternet GTP-U
       - "10.10.10.101:2152:2152/udp"
     ulimits:
       memlock: -1
@@ -228,7 +228,7 @@ services:
         echo "done"
         tail -f /dev/null
   ims-routes:
-    # 中文注释：IMS子网回程路由，将UE_IPV4_IMS流量引导至IMS UPF容器，不做MASQUERADE（IMS信令保留原始IP）
+    # 涓枃娉ㄩ噴锛欼MS瀛愮綉鍥炵▼璺敱锛屽皢UE_IPV4_IMS娴侀噺寮曞鑷矷MS UPF瀹瑰櫒锛屼笉鍋歁ASQUERADE锛圛MS淇′护淇濈暀鍘熷IP锛?
     image: nicolaka/netshoot
     network_mode: host
     privileged: true
@@ -244,7 +244,7 @@ services:
         echo "done"
         tail -f /dev/null
   upf_ims:
-    image: docker_open5gs
+    image: ghcr.io/herlesupreeth/docker_open5gs:master
     depends_on:
       - nrf
       - scp
@@ -264,7 +264,7 @@ services:
       - "8805/udp"
       - "9091/tcp"
     ports:
-      # 中文注释：IMS UPF N3端口绑定到ens37(10.10.10.100)，gNB通过此IP发送IMS GTP-U
+      # 涓枃娉ㄩ噴锛欼MS UPF N3绔彛缁戝畾鍒癳ns37(10.10.10.100)锛実NB閫氳繃姝P鍙戦€両MS GTP-U
       - "10.10.10.100:2152:2152/udp"
     cap_add:
       - NET_ADMIN
@@ -276,7 +276,7 @@ services:
       default:
         ipv4_address: ${IMS_UPF_IP}
   amf:
-    image: docker_open5gs
+    image: ghcr.io/herlesupreeth/docker_open5gs:master
     depends_on:
       - nrf
       - scp
@@ -300,13 +300,13 @@ services:
       - "7777/tcp"
       - "9091/tcp"
     ports:
-      # 中文注释：N2端口绑定到ens37(10.10.10.100)，gNB通过此IP建立NGAP连接
+      # 涓枃娉ㄩ噴锛歂2绔彛缁戝畾鍒癳ns37(10.10.10.100)锛実NB閫氳繃姝P寤虹珛NGAP杩炴帴
       - "10.10.10.100:38412:38412/sctp"
     networks:
       default:
         ipv4_address: ${AMF_IP}
   pcf:
-    image: docker_open5gs
+    image: ghcr.io/herlesupreeth/docker_open5gs:master
     depends_on:
       - nrf
       - scp
@@ -328,7 +328,7 @@ services:
       default:
         ipv4_address: ${PCF_IP}
   bsf:
-    image: docker_open5gs
+    image: ghcr.io/herlesupreeth/docker_open5gs:master
     depends_on:
       - nrf
       - scp
@@ -349,7 +349,7 @@ services:
       default:
         ipv4_address: ${BSF_IP}
   nssf:
-    image: docker_open5gs
+    image: ghcr.io/herlesupreeth/docker_open5gs:master
     depends_on:
       - nrf
       - scp
@@ -371,7 +371,7 @@ services:
         ipv4_address: ${NSSF_IP}
   metrics:
     build: ../../metrics
-    image: docker_metrics
+    image: ghcr.io/herlesupreeth/docker_metrics:master
     container_name: metrics
     env_file:
       - .custom_env
@@ -431,7 +431,7 @@ services:
         ipv4_address: ${RTPENGINE_IP}
   mysql:
     build: ../../mysql
-    image: docker_mysql
+    image: ghcr.io/herlesupreeth/docker_mysql:master
     container_name: mysql
     env_file:
       - .custom_env
@@ -446,7 +446,7 @@ services:
         ipv4_address: ${MYSQL_IP}
   pyhss:
     build: ../../pyhss
-    image: docker_pyhss
+    image: ghcr.io/herlesupreeth/docker_pyhss:master
     container_name: pyhss
     dns: ${DNS_IP}
     volumes:
@@ -469,7 +469,7 @@ services:
       default:
         ipv4_address: ${PYHSS_IP}
   icscf:
-    image: docker_kamailio
+    image: ghcr.io/herlesupreeth/docker_kamailio:master
     container_name: icscf
     dns: ${DNS_IP}
     volumes:
@@ -493,7 +493,7 @@ services:
       default:
         ipv4_address: ${ICSCF_IP}
   scscf:
-    image: docker_kamailio
+    image: ghcr.io/herlesupreeth/docker_kamailio:master
     container_name: scscf
     dns: ${DNS_IP}
     volumes:
@@ -517,7 +517,7 @@ services:
       default:
         ipv4_address: ${SCSCF_IP}
   pcscf:
-    image: docker_kamailio
+    image: ghcr.io/herlesupreeth/docker_kamailio:master
     container_name: pcscf
     dns: ${DNS_IP}
     privileged: true
@@ -551,7 +551,7 @@ services:
       default:
         ipv4_address: ${PCSCF_IP}
   smsc:
-    image: docker_kamailio
+    image: ghcr.io/herlesupreeth/docker_kamailio:master
     container_name: smsc
     dns: ${DNS_IP}
     volumes:
