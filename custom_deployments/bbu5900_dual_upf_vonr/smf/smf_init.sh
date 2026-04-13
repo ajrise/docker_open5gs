@@ -25,8 +25,9 @@ cp /mnt/smf/make_certs.sh install/etc/freeDiameter
 sed -i 's|SMF_IP|'$SMF_IP'|g' install/etc/open5gs/smf.yaml
 sed -i 's|SCP_IP|'$SCP_IP'|g' install/etc/open5gs/smf.yaml
 sed -i 's|NRF_IP|'$NRF_IP'|g' install/etc/open5gs/smf.yaml
-sed -i 's|UPF_IP|'$UPF_IP'|g' install/etc/open5gs/smf.yaml
+# 中文注释：必须先替换 IMS_UPF_IP，再替换 UPF_IP，避免 IMS_UPF_IP 被 UPF_IP 部分匹配破坏
 sed -i 's|IMS_UPF_IP|'$IMS_UPF_IP'|g' install/etc/open5gs/smf.yaml
+sed -i 's|UPF_IP|'$UPF_IP'|g' install/etc/open5gs/smf.yaml
 sed -i 's|SMF_DNS1|'$SMF_DNS1'|g' install/etc/open5gs/smf.yaml
 sed -i 's|SMF_DNS2|'$SMF_DNS2'|g' install/etc/open5gs/smf.yaml
 sed -i 's|UE_IPV4_INTERNET_APN_GATEWAY_IP|'$UE_IPV4_INTERNET_APN_GATEWAY_IP'|g' install/etc/open5gs/smf.yaml
