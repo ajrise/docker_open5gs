@@ -1,0 +1,33 @@
+# 中文注释：原生 Open5GS UPF（仅承载 ims APN）
+logger:
+    file:
+      path: /open5gs/install/var/log/open5gs/upf-ims.log
+
+global:
+  max:
+    ue: MAX_NUM_UE
+
+upf:
+    pfcp:
+      server:
+        - address: IMS_UPF_IP
+      client:
+        smf:
+          - address: SMF_IP
+    gtpu:
+      server:
+        - address: IMS_UPF_IP
+          advertise: IMS_UPF_ADVERTISE_IP
+    session:
+      - subnet: UE_IPV4_IMS_SUBNET
+        gateway: UE_IPV4_IMS_TUN_IP
+        dnn: ims
+        dev: IMS_UPF_APN_IF_NAME
+      - subnet: 2001:230:babe::/48
+        gateway: 2001:230:babe::1
+        dnn: ims
+        dev: IMS_UPF_APN_IF_NAME
+    metrics:
+      server:
+        - address: IMS_UPF_IP
+          port: 9091
