@@ -35,6 +35,8 @@ SMF_DNS2=8.8.4.4
 # UPF
 # eUPF for internet APN
 UPF_IP=172.22.0.8
+# eUPF PFCP(N4)地址（SMF访问），host网络模式下使用ens38地址
+UPF_PFCP_IP=10.10.10.101
 # eUPF N3广播地址 → ens38 (10.10.10.101), gNB通过此IP发送internet N3 GTP-U
 UPF_ADVERTISE_IP=10.10.10.101
 # Native Open5GS UPF for ims APN
@@ -136,10 +138,18 @@ OSMOEPDG_IP=172.22.0.41
 SWU_CLIENT_IP=172.22.0.42
 
 # UE IPv4 Subnet Range for APN=internet
-UE_IPV4_INTERNET=192.168.100.0/24
+UE_IPV4_INTERNET=10.45.0.0/16
 
 # UE IPv4 Subnet Range for APN=ims
-UE_IPV4_IMS=192.168.101.0/24
+UE_IPV4_IMS=10.46.0.0/16
+
+# Host policy-routing for UE subnets (N6 egress)
+# 建议：N6_IF 对应外网出口网卡（例如 ens39），N6_GATEWAY 为该网段网关
+N6_IF=ens39
+N6_GATEWAY=192.168.2.254
+UE_POLICY_TABLE=245
+UE_POLICY_PRIO_INTERNET=10045
+UE_POLICY_PRIO_IMS=10046
 
 # Maximum Number of UEs
 MAX_NUM_UE=1024
