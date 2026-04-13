@@ -180,11 +180,13 @@ services:
       # 涓枃娉ㄩ噴锛氫互涓嬪彉閲忛噰鐢ㄥ畼鏂规枃妗ｄ腑鐨勭幆澧冨彉閲忔柟寮?
       - GIN_MODE=release
       - UPF_INTERFACE_NAME=eth0
-      - UPF_XDP_ATTACH_MODE=generic
+       # 中文注释：在Docker端口映射场景下关闭XDP，避免N3/2152 Echo异常
+       - UPF_XDP_ATTACH_MODE=none
       - UPF_API_ADDRESS=:8181
       - UPF_PFCP_ADDRESS=:8805
       - UPF_METRICS_ADDRESS=:9091
-      - UPF_PFCP_NODE_ID=${UPF_IP}
+       # 中文注释：PFCP NodeID对外使用N3可达地址，避免下游感知到容器内网IP
+       - UPF_PFCP_NODE_ID=${UPF_ADVERTISE_IP}
       - UPF_N3_ADDRESS=${UPF_ADVERTISE_IP}
     volumes:
       - /sys/fs/bpf:/sys/fs/bpf
