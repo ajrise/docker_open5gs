@@ -26,20 +26,4 @@ cd custom_deployments/slicing
 docker compose -f sa-deploy.yaml up
 ```
 
-Deploy UERANSIM gNB (RF simulated).
-
-```
-docker compose -f nr-gnb.yaml up -d && docker container attach nr_gnb
-```
-
-Deploy UERANSIM NR-UE (RF simulated) for first slice.
-
-```
-docker compose -f nr-ue.yaml up -d && docker container attach nr_ue
-```
-
-Deploy UERANSIM NR-UE (RF simulated) for second slice.
-
-```
-docker compose -f nr-ue2.yaml up -d && docker container attach nr_ue2
-```
+RAN simulation compose files were removed in this fork. Connect a commercial gNB/UE environment to this core deployment instead.

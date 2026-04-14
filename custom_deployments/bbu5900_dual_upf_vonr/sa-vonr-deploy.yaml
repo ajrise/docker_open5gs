@@ -180,14 +180,18 @@ services:
     environment:
       # 涓枃娉ㄩ噴锛氫互涓嬪彉閲忛噰鐢ㄥ畼鏂规枃妗ｄ腑鐨勭幆澧冨彉閲忔柟寮?
       - GIN_MODE=release
-      # 中文注释：XDP直接挂载宿主机ens38（10.10.10.101）
-      - UPF_INTERFACE_NAME=ens38
+      # 中文注释：XDP挂载宿主机ens38(N3)和ens39(N6)
+      # ens38: 接收gNB GTP-U并解封装(上行); ens39: 拦截互联网回包并GTP封装(下行)
+      - UPF_INTERFACE_NAME=ens38,ens39
       - UPF_XDP_ATTACH_MODE=generic
       - UPF_API_ADDRESS=:8181
       - UPF_PFCP_ADDRESS=:8805
       - UPF_METRICS_ADDRESS=:9091
-      - UPF_PFCP_NODE_ID=${UPF_PFCP_IP}
+      - UPF_PFCP_NODE_ID=${UPF_ADVERTISE_IP}
       - UPF_N3_ADDRESS=${UPF_ADVERTISE_IP}
+      # 中文注释：开启FTUP，eUPF自己分配F-TEID并在PFCP响应中上报N3 IP=UPF_ADVERTISE_IP
+      # 否则SMF会用PFCP连接地址(172.22.0.1)作为UPF的GTP-U地址发给gNB
+      - UPF_FEATURE_FTUP=true
     volumes:
       - /sys/fs/bpf:/sys/fs/bpf
       - /sys/kernel/debug:/sys/kernel/debug:ro
@@ -199,46 +203,13 @@ services:
       - NET_ADMIN
       - SYS_ADMIN
     privileged: true
-  eupf-routes:
-    image: nicolaka/netshoot
-    network_mode: host
-    privileged: true
-    container_name: eupf-routes
-    env_file:
-      - .custom_env
-    command:
-      - /bin/sh
-      - -c
-      - |
-        # 中文注释：eUPF改为host网络后，internet子网回程直接指向ens38
-        # 中文注释：NAT上移到上层网关，eUPF本地不再做MASQUERADE
-        ip ro replace ${UE_IPV4_INTERNET} dev ens38 && \
-        sysctl -w net.ipv4.conf.all.accept_local=1
-        echo "done"
-        tail -f /dev/null
-  ims-routes:
-    # 涓枃娉ㄩ噴锛欼MS瀛愮綉鍥炵▼璺敱锛屽皢UE_IPV4_IMS娴侀噺寮曞鑷矷MS UPF瀹瑰櫒锛屼笉鍋歁ASQUERADE锛圛MS淇′护淇濈暀鍘熷IP锛?
-    image: nicolaka/netshoot
-    network_mode: host
-    privileged: true
-    container_name: ims-routes
-    env_file:
-      - .custom_env
-    command:
-      - /bin/sh
-      - -c
-      - |
-        ip ro add ${UE_IPV4_IMS} via ${IMS_UPF_IP} && \
-        sysctl -w net.ipv4.conf.all.accept_local=1
-        echo "done"
-        tail -f /dev/null
-  upf_ims:
+  upf:
     image: ghcr.io/herlesupreeth/docker_open5gs:master
     depends_on:
       - nrf
       - scp
       - smf
-    container_name: upf_ims
+    container_name: upf
     env_file:
       - .custom_env
     environment:
@@ -253,17 +224,15 @@ services:
       - "8805/udp"
       - "9091/tcp"
     ports:
-      # 涓枃娉ㄩ噴锛欼MS UPF N3绔彛缁戝畾鍒癳ns37(10.10.10.100)锛実NB閫氳繃姝P鍙戦€両MS GTP-U
       - "10.10.10.100:2152:2152/udp"
     cap_add:
       - NET_ADMIN
     privileged: true
     sysctls:
       - net.ipv4.ip_forward=1
-      #- net.ipv6.conf.all.disable_ipv6=0
     networks:
       default:
-        ipv4_address: ${IMS_UPF_IP}
+        ipv4_address: ${UPF_IP}
   amf:
     image: ghcr.io/herlesupreeth/docker_open5gs:master
     depends_on:

@@ -1,13 +1,13 @@
 # docker_open5gs
+
+> Fork note: this fork removed simulated RAN assets (srsRAN, UERANSIM, OAI, related compose files and build contexts). Use commercial gNB/UE with the core/IMS deployments under `custom_deployments`.
+
 Quite contrary to the name of the repository, this repository contains docker files to deploy an Over-The-Air (OTA) or RF simulated 4G/5G network using following projects:
 - Core Network (4G/5G) - open5gs - https://github.com/open5gs/open5gs
 - IMS (VoLTE + VoNR) - kamailio - https://github.com/kamailio/kamailio
 - IMS HSS - https://github.com/nickvsnetworking/pyhss
 - Osmocom HLR - https://github.com/osmocom/osmo-hlr
 - Osmocom MSC - https://github.com/osmocom/osmo-msc
-- srsRAN_4G (4G eNB + 4G UE + 5G UE) - https://github.com/srsran/srsRAN_4G
-- srsRAN_Project (5G gNB) - https://github.com/srsran/srsRAN_Project
-- UERANSIM (5G gNB + 5G UE) - https://github.com/aligungr/UERANSIM
 - eUPF (5G UPF) - https://github.com/edgecomllc/eupf
 - OpenSIPS IMS - https://github.com/OpenSIPS/opensips
 - Sigscale OCS - https://github.com/sigscale/ocs
@@ -50,17 +50,11 @@ Docker host machine
 
 Over-The-Air setups: 
 
-- srsRAN_Project gNB using Ettus USRP B210
-- srsRAN_Project (5G gNB) using LibreSDR (USRP B210 clone)
-- srsRAN_4G eNB using LimeSDR Mini v1.3
-- srsRAN_4G eNB using LimeSDR-USB
-- srsRAN_4G eNB using LibreSDR (USRP B210 clone)
+- Commercial gNB and UE with Open5GS core and IMS stack
 
 RF simulated setups:
 
-- srsRAN_4G (eNB + UE) simulation over ZMQ
-- srsRAN_Project (5G gNB) + srsRAN_4G (5G UE) simulation over ZMQ
-- UERANSIM (gNB + UE) simulator
+- Not available in this fork
 
 ## Prepare Docker images
 
@@ -107,21 +101,6 @@ docker pull ghcr.io/herlesupreeth/docker_opensips:master
 docker tag ghcr.io/herlesupreeth/docker_opensips:master docker_opensips
 ```
 
-For srsRAN components:
-```
-docker pull ghcr.io/herlesupreeth/docker_srslte:master
-docker tag ghcr.io/herlesupreeth/docker_srslte:master docker_srslte
-
-docker pull ghcr.io/herlesupreeth/docker_srsran:master
-docker tag ghcr.io/herlesupreeth/docker_srsran:master docker_srsran
-```
-
-For UERANSIM components:
-```
-docker pull ghcr.io/herlesupreeth/docker_ueransim:master
-docker tag ghcr.io/herlesupreeth/docker_ueransim:master docker_ueransim
-```
-
 For EUPF component:
 ```
 docker pull ghcr.io/herlesupreeth/docker_eupf:master
@@ -147,7 +126,7 @@ docker tag ghcr.io/herlesupreeth/docker_swu_client:master docker_swu_client
 ```
 
 ### Build Docker images from source
-#### Clone repository and build base docker image of open5gs, kamailio, srsRAN_4G, srsRAN_Project, ueransim
+#### Clone repository and build base docker image of open5gs and kamailio
 
 ```
 # Build docker image for open5gs EPC/5GC components
@@ -158,18 +137,6 @@ docker build --no-cache --force-rm -t docker_open5gs .
 # Build docker image for kamailio IMS components
 cd ../ims_base
 docker build --no-cache --force-rm -t docker_kamailio .
-
-# Build docker image for srsRAN_4G eNB + srsUE (4G+5G)
-cd ../srslte
-docker build --no-cache --force-rm -t docker_srslte .
-
-# Build docker image for srsRAN_Project gNB
-cd ../srsran
-docker build --no-cache --force-rm -t docker_srsran .
-
-# Build docker image for UERANSIM (gNB + UE)
-cd ../ueransim
-docker build --no-cache --force-rm -t docker_ueransim .
 
 # Build docker image for EUPF
 cd ../eupf

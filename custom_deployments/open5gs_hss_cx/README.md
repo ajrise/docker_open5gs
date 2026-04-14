@@ -30,8 +30,4 @@ cd custom_deployments/open5gs_hss_cx
 docker compose -f 4g-volte-deploy.yaml up
 ```
 
-Deploy srsRAN eNB using SDR (OTA)
-
-```
-docker compose -f srsenb.yaml up -d && docker container attach srsenb
-```
+RAN simulation/SDR compose files were removed in this fork. Connect an external commercial RAN and UE environment to this deployment.

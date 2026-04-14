@@ -20,15 +20,6 @@ jobs:
           - image: docker_kamailio
             context: ims_base
             file: Dockerfile
-          - image: docker_srslte
-            context: srslte
-            file: Dockerfile
-          - image: docker_srsran
-            context: srsran
-            file: Dockerfile
-          - image: docker_ueransim
-            context: ueransim
-            file: Dockerfile
           - image: docker_dns
             context: dns
             file: Dockerfile

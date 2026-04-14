@@ -35,12 +35,14 @@ SMF_DNS2=8.8.4.4
 # UPF
 # eUPF for internet APN
 UPF_IP=172.22.0.8
-# eUPF PFCP(N4)地址（SMF访问），host网络模式下使用ens38地址
-UPF_PFCP_IP=10.10.10.101
+# eUPF PFCP(N4)地址（SMF访问）
+# 说明：SMF在docker bridge(172.22.0.0/24)内，与host模式eUPF交互时应使用宿主机bridge地址，
+# 否则eUPF回包源为172.22.0.1会触发SMF PFCP事务匹配失败
+UPF_PFCP_IP=172.22.0.1
 # eUPF N3广播地址 → ens38 (10.10.10.101), gNB通过此IP发送internet N3 GTP-U
 UPF_ADVERTISE_IP=10.10.10.101
-# Native Open5GS UPF for ims APN
-IMS_UPF_IP=172.22.0.90
+# Native Open5GS UPF for ims APN (与UPF_IP相同，ims流量走bridge内部)
+IMS_UPF_IP=172.22.0.8
 # IMS UPF N3广播地址 → ens37 (10.10.10.100), gNB通过此IP发送IMS N3 GTP-U
 IMS_UPF_ADVERTISE_IP=10.10.10.100
 IMS_UPF_TUNTAP_MODE=tun

@@ -40,6 +40,7 @@ smf:
       client:
         upf:
           # 中文注释：internet eUPF N4对端，host网络模式下使用UPF_PFCP_IP
+          # 注：eUPF需开启FTUP(UPF_FEATURE_FTUP=true)，由eUPF自己上报F-TEID IP=10.10.10.101
           - address: UPF_PFCP_IP
             dnn: internet
           - address: IMS_UPF_IP
