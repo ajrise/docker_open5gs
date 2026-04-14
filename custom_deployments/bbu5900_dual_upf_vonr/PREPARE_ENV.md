@@ -41,9 +41,16 @@ sudo ./prepare_host.sh apply
 - `DOCKER_HOST_IP`
 - `TEST_NETWORK`
 - `UPF_IP` / `IMS_UPF_IP`
+- `UPF_PFCP_IP`：本场景固定填写宿主机 bridge 地址 `172.22.0.1`，不要填写 `ens38` 地址
 - `UPF_ADVERTISE_IP` / `IMS_UPF_ADVERTISE_IP`
 - `UE_IPV4_INTERNET` / `UE_IPV4_IMS`
 - `MCC` / `MNC` / `TAC`
+
+补充说明：
+
+- eUPF 采用 `network_mode: host`，PFCP 控制面与 N3 用户面地址是分离的。
+- `UPF_PFCP_IP` 供 SMF 建立 N4/PFCP，使用 bridge 地址 `172.22.0.1`。
+- `UPF_ADVERTISE_IP` 供 PFCP NodeID/N3 advertise 与 gNB 建立 GTP-U，使用 `ens38` 地址 `10.10.10.101`。
 
 ## 5) 镜像准备（优先拉取，按需构建）
 

@@ -19,7 +19,7 @@ if [[ ! -f "${ENV_FILE}" ]]; then
 fi
 
 # shellcheck disable=SC1090
-source "${ENV_FILE}"
+source <(tr -d '\r' < "${ENV_FILE}")
 
 : "${UE_IPV4_INTERNET:?UE_IPV4_INTERNET is required in .custom_env}"
 : "${UE_IPV4_IMS:?UE_IPV4_IMS is required in .custom_env}"
@@ -45,13 +45,25 @@ Wants=network-online.target
 
 [Service]
 Type=oneshot
-ExecStart=/bin/sh -c 'ip route replace default via ${N6_GATEWAY} dev ${N6_IF} table ${UE_POLICY_TABLE}; ip rule del from ${UE_IPV4_INTERNET} table ${UE_POLICY_TABLE} 2>/dev/null || true; ip rule del from ${UE_IPV4_IMS} table ${UE_POLICY_TABLE} 2>/dev/null || true; ip rule add from ${UE_IPV4_INTERNET} table ${UE_POLICY_TABLE} priority ${UE_POLICY_PRIO_INTERNET}; ip rule add from ${UE_IPV4_IMS} table ${UE_POLICY_TABLE} priority ${UE_POLICY_PRIO_IMS}'
-ExecStop=/bin/sh -c 'ip rule del from ${UE_IPV4_INTERNET} table ${UE_POLICY_TABLE} 2>/dev/null || true; ip rule del from ${UE_IPV4_IMS} table ${UE_POLICY_TABLE} 2>/dev/null || true; ip route del default via ${N6_GATEWAY} dev ${N6_IF} table ${UE_POLICY_TABLE} 2>/dev/null || true'
+ExecStart=/bin/sh -c 'ip route replace default via ${N6_GATEWAY} dev ${N6_IF} table ${UE_POLICY_TABLE}; ip rule del from ${UE_IPV4_INTERNET} table ${UE_POLICY_TABLE} 2>/dev/null || true; ip rule del from ${UE_IPV4_IMS} table ${UE_POLICY_TABLE} 2>/dev/null || true; ip rule add from ${UE_IPV4_INTERNET} table ${UE_POLICY_TABLE} priority ${UE_POLICY_PRIO_INTERNET}; ip rule add from ${UE_IPV4_IMS} table ${UE_POLICY_TABLE} priority ${UE_POLICY_PRIO_IMS}; iptables -t nat -C POSTROUTING -s ${UE_IPV4_INTERNET} -o ${N6_IF} -j MASQUERADE 2>/dev/null || iptables -t nat -A POSTROUTING -s ${UE_IPV4_INTERNET} -o ${N6_IF} -j MASQUERADE; iptables -t nat -C POSTROUTING -s ${UE_IPV4_IMS} -o ${N6_IF} -j MASQUERADE 2>/dev/null || iptables -t nat -A POSTROUTING -s ${UE_IPV4_IMS} -o ${N6_IF} -j MASQUERADE'
+ExecStop=/bin/sh -c 'iptables -t nat -D POSTROUTING -s ${UE_IPV4_INTERNET} -o ${N6_IF} -j MASQUERADE 2>/dev/null || true; iptables -t nat -D POSTROUTING -s ${UE_IPV4_IMS} -o ${N6_IF} -j MASQUERADE 2>/dev/null || true; ip rule del from ${UE_IPV4_INTERNET} table ${UE_POLICY_TABLE} 2>/dev/null || true; ip rule del from ${UE_IPV4_IMS} table ${UE_POLICY_TABLE} 2>/dev/null || true; ip route del default via ${N6_GATEWAY} dev ${N6_IF} table ${UE_POLICY_TABLE} 2>/dev/null || true'
 RemainAfterExit=yes
 
 [Install]
 WantedBy=multi-user.target
 EOF
+}
+
+ensure_nat() {
+  iptables -t nat -C POSTROUTING -s "${UE_IPV4_INTERNET}" -o "${N6_IF}" -j MASQUERADE 2>/dev/null || \
+    iptables -t nat -A POSTROUTING -s "${UE_IPV4_INTERNET}" -o "${N6_IF}" -j MASQUERADE
+  iptables -t nat -C POSTROUTING -s "${UE_IPV4_IMS}" -o "${N6_IF}" -j MASQUERADE 2>/dev/null || \
+    iptables -t nat -A POSTROUTING -s "${UE_IPV4_IMS}" -o "${N6_IF}" -j MASQUERADE
+}
+
+remove_nat() {
+  iptables -t nat -D POSTROUTING -s "${UE_IPV4_INTERNET}" -o "${N6_IF}" -j MASQUERADE 2>/dev/null || true
+  iptables -t nat -D POSTROUTING -s "${UE_IPV4_IMS}" -o "${N6_IF}" -j MASQUERADE 2>/dev/null || true
 }
 
 apply_policy() {
@@ -62,6 +74,7 @@ apply_policy() {
   ip rule del from "${UE_IPV4_IMS}" table "${UE_POLICY_TABLE}" 2>/dev/null || true
   ip rule add from "${UE_IPV4_INTERNET}" table "${UE_POLICY_TABLE}" priority "${UE_POLICY_PRIO_INTERNET}"
   ip rule add from "${UE_IPV4_IMS}" table "${UE_POLICY_TABLE}" priority "${UE_POLICY_PRIO_IMS}"
+  ensure_nat
 
   write_service
   systemctl daemon-reload
@@ -77,6 +90,7 @@ remove_policy() {
   ip rule del from "${UE_IPV4_INTERNET}" table "${UE_POLICY_TABLE}" 2>/dev/null || true
   ip rule del from "${UE_IPV4_IMS}" table "${UE_POLICY_TABLE}" 2>/dev/null || true
   ip route del default via "${N6_GATEWAY}" dev "${N6_IF}" table "${UE_POLICY_TABLE}" 2>/dev/null || true
+  remove_nat
 
   if systemctl list-unit-files | grep -q "^${SERVICE_NAME}"; then
     systemctl disable --now "${SERVICE_NAME}" 2>/dev/null || true
@@ -95,6 +109,9 @@ status_policy() {
 
   echo "=== Table ${UE_POLICY_TABLE} ==="
   ip route show table "${UE_POLICY_TABLE}" || true
+
+  echo "=== NAT Rules ==="
+  iptables -t nat -S | grep -E "${UE_IPV4_INTERNET}|${UE_IPV4_IMS}|${N6_IF}" || true
 
   echo "=== Route Decisions ==="
   ip route get 8.8.8.8 from "${UE_IPV4_INTERNET%%/*}" iif "${N6_IF}" 2>/dev/null || true
