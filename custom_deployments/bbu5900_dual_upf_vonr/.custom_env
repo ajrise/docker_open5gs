@@ -53,6 +53,9 @@ MME_IP=172.22.0.9
 
 # AMF
 AMF_IP=172.22.0.10
+# BBU5900 idle-resume tolerance: AMF paging retry window
+AMF_T3513_DURATION=5
+AMF_T3513_MAX_COUNT=6
 
 # AUSF
 AUSF_IP=172.22.0.11

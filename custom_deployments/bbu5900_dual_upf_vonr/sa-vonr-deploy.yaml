@@ -234,7 +234,13 @@ services:
       default:
         ipv4_address: ${UPF_IP}
   amf:
-    image: ghcr.io/herlesupreeth/docker_open5gs:master
+    build:
+      context: ./amf_tuned_image
+      args:
+        OPEN5GS_BASE_IMAGE: ghcr.io/herlesupreeth/docker_open5gs:master
+        AMF_T3513_DURATION: ${AMF_T3513_DURATION}
+        AMF_T3513_MAX_COUNT: ${AMF_T3513_MAX_COUNT}
+    image: bbu5900-open5gs-amf:latest
     depends_on:
       - nrf
       - scp
