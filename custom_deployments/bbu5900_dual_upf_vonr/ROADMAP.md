@@ -46,6 +46,52 @@
 | Phase 5 | 用户与计费平台 | 统一开户、鉴权与基础计费管理 | 后续独立推进 |
 | Phase 6 | SIP 外联 | 实现 VoNR 与外部 SIP 系统互通 | 平台成熟后推进 |
 
+### GitHub 可视化路线图
+
+```mermaid
+flowchart TD
+    A[Phase 1 稳定基线] --> B[Phase 2 可观测性]
+    B --> C[Phase 3 数据面演进]
+    C --> D[Phase 4 自动化运维]
+    D --> E[Phase 5 用户与计费平台]
+    E --> F[Phase 6 SIP 外联]
+
+    A1[双 UPF 分流稳定]
+    A2[VoNR 与空闲态恢复验证]
+    B1[Prometheus Grafana 告警]
+    B2[日志审计与时间线]
+    C1[eUPF native 模式验证]
+    C2[吞吐 时延 CPU 对比]
+    D1[Ansible 部署与回退]
+    D2[Runbook 与巡检标准化]
+    E1[开户 鉴权 主数据]
+    E2[基础离线计费]
+    F1[IBCF 与外部 SIP 联调]
+    F2[号码 路由 安全边界]
+
+    A --> A1
+    A --> A2
+    B --> B1
+    B --> B2
+    C --> C1
+    C --> C2
+    D --> D1
+    D --> D2
+    E --> E1
+    E --> E2
+    F --> F1
+    F --> F2
+```
+
+### 阶段状态视图
+
+- [x] Phase 1：已完成主链路验证并进入固化阶段
+- [ ] Phase 2：开始补齐监控、告警、仪表板与日志审计
+- [ ] Phase 3：待监控基线稳定后验证 eUPF 原生模式
+- [ ] Phase 4：待数据面验证收敛后推进自动化部署与运维
+- [ ] Phase 5：后续建立统一开户、鉴权与基础计费平台
+- [ ] Phase 6：平台成熟后推进外部 SIP / IBCF 对接
+
 ---
 
 ## 4. 各阶段细化
@@ -208,3 +254,19 @@
 3. 为 eUPF 原生模式切换准备验证基线与回退方案
 
 这三项完成后，项目就会从“现场验证型”明显进入“可持续演进型”。
+
+## 9. GitHub 使用建议
+
+为了让该路线图在 GitHub 中更好地承担“长期追踪”作用，建议配套采用以下方式：
+
+- 把 `ROADMAP.md` 作为总路线入口
+- 把 `PROJECT_STATUS.md` 作为阶段状态更新入口
+- 把 `CONFIRMED_FACTS.md` 作为已确认事实归档
+- 对每个重要里程碑使用清晰的 commit message 和 tag
+- 如后续任务变多，可再启用 GitHub Issues 或 Projects 做轻量看板
+
+这样可以兼顾：
+- 文档可读性
+- GitHub 页面可视化展示
+- 长期演进的可追踪性
+- 与 Copilot 协作时的上下文连续性
