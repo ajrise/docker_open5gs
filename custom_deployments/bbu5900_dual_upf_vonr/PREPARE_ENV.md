@@ -79,7 +79,24 @@ cd ../ims_base && sudo docker build --no-cache --force-rm -t docker_kamailio .
 # cd ../eupf && sudo docker build --no-cache --force-rm -t local/eupf:latest .
 ```
 
-## 6) 启动场景
+## 6) 双 N3 同子网部署的额外建议
+
+如果 `ens37`（AMF/IMS N3）与 `ens38`（eUPF N3）和 gNB 处于**同一 VLAN / 同一子网**，建议在宿主机额外固定 ARP 与源路由，避免 eUPF 回程漂移到错误网卡：
+
+```bash
+sudo sysctl -w net.ipv4.conf.all.arp_ignore=1
+sudo sysctl -w net.ipv4.conf.all.arp_announce=2
+
+sudo ip rule add from 10.10.10.100/32 table 100
+sudo ip route add 10.10.10.0/24 dev ens37 src 10.10.10.100 table 100
+
+sudo ip rule add from 10.10.10.101/32 table 101
+sudo ip route add 10.10.10.0/24 dev ens38 src 10.10.10.101 table 101
+```
+
+> 长期更优方案是将两个 N3 接口拆到不同 VLAN 或子网。
+
+## 7) 启动场景
 
 ```bash
 cd ../custom_deployments/bbu5900_dual_upf_vonr
@@ -89,16 +106,17 @@ set +a
 sudo docker compose -f sa-vonr-deploy.yaml up -d
 ```
 
-## 7) 基础健康检查
+## 8) 基础健康检查
 
 ```bash
 sudo docker ps --format 'table {{.Names}}\t{{.Status}}'
 sudo docker logs --tail=80 smf
 sudo docker logs --tail=80 eupf
-sudo docker logs --tail=80 upf_ims
+sudo docker logs --tail=80 upf
+bash ./system_log_audit.sh 30m
 ```
 
-## 8) 外部商用RAN/UE对接说明
+## 9) 外部商用RAN/UE对接说明
 
 - 当前 fork 已移除模拟 gNB/UE 编排文件。
 - 请使用商用 gNB 与实体 UE 接入本场景的 AMF/UPF 地址。
@@ -107,7 +125,7 @@ sudo docker logs --tail=80 upf_ims
   - `internet` PDU 会话进入 eUPF
   - `ims` PDU 会话进入原生 Open5GS UPF
 
-## 9) 静态验收执行
+## 10) 静态验收执行
 
 请按以下清单逐项验收：
 

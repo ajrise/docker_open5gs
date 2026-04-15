@@ -54,9 +54,11 @@
 | `ue_policy_routing.sh` | 运维 | UE 子网策略路由管理（apply/status/remove + systemd） |
 | `baseline_capture.sh` | 诊断 | 多接口抓包 + 日志基线采集 |
 | `diagnose_eupf_addr.sh` | 诊断 | eUPF 地址与 PFCP 诊断 |
+| `system_log_audit.sh` | 运维/审计 | 汇总所有网元日志，统计异常、重连、UE离线与 IMS 呼叫关键事件 |
 | `smf/smf.conf`, `smf/make_certs.sh`, `smf/ip_utils.py` | 镜像 | 上游副本（Docker volume mount 整目录替换所需） |
 | `upf/tun_if.py`, `upf/ip_utils.py` | 镜像 | 上游副本（Docker volume mount 整目录替换所需） |
 | `PREPARE_ENV.md` | 文档 | 部署环境准备详细说明 |
+| `PROJECT_STATUS.md` | 文档 | 本次联调成果、问题、修复方式与遗留项总结 |
 | `STATIC_ACCEPTANCE_CHECKLIST.md` | 文档 | 静态验收检查清单 |
 
 > **为什么存在"镜像"文件？** Docker volume mount (`./smf:/mnt/smf`) 是整目录替换，容器内原有文件被遮蔽。因此容器 init 脚本所依赖的辅助文件（`ip_utils.py`、`tun_if.py`、`make_certs.sh`、`smf.conf`）必须在覆盖目录中保留一份副本。
@@ -83,7 +85,7 @@
 
 ## 快速部署
 
-详细环境准备见 [PREPARE_ENV.md](PREPARE_ENV.md)。
+详细环境准备见 [PREPARE_ENV.md](PREPARE_ENV.md)，阶段性成果与遗留问题见 [PROJECT_STATUS.md](PROJECT_STATUS.md)。
 
 ```bash
 # 1. 拉取镜像
@@ -107,12 +109,42 @@ docker logs --tail=30 smf   # 确认双 PFCP Association
 docker logs --tail=30 eupf  # 确认 XDP on ens38,ens39
 ```
 
+## 当前已验证结果
+
+- **internet 数据业务恢复正常**：UE `internet` PDU 会话经 eUPF 转发，地址池为 `10.45.0.0/16`
+- **IMS 业务保持独立承载**：`ims` PDU 会话走 Open5GS UPF，地址池为 `10.46.0.0/16`
+- **VoNR 呼叫已实测成功**：现场以短号 `801003` 直拨，链路完成 `INVITE → 100 Trying → 200 OK → ACK → BYE`
+- **系统审计脚本可用**：已新增 `system_log_audit.sh`，可统一汇总 Open5GS / IMS / eUPF 日志并生成时间线
+
 ## 已验证陷阱
 
 | 陷阱 | 原因 | 正确做法 |
 |------|------|----------|
 | eUPF PFCP 事务匹配失败 | `UPF_PFCP_IP` 设为 `10.10.10.101`，但 eUPF 回包源为 `172.22.0.1` | `UPF_PFCP_IP=172.22.0.1`（bridge 网关地址） |
 | UE 无法上网 | XDP 仅在 ens38(N3)，下行包在 ens39(N6) 无法被拦截封装 | `UPF_INTERFACE_NAME=ens38,ens39` |
+| gNB 间歇性提示 eUPF 不可用 | `ens37/ens38/gNB` 同 VLAN 同子网，Linux 回程与 ARP 选择漂移 | 为 `10.10.10.100/101` 配置 `arp_ignore=1`、`arp_announce=2` 与源地址策略路由；长期建议拆分 VLAN/子网 |
 | XDP 流量不经过 iptables | `bpf_redirect()` 完全绕过 netfilter | 使用上游网关静态路由而非 MASQUERADE |
 | 环境变量未加载 | compose 默认读 `.env`，本场景用 `.custom_env` | `set -a && source .custom_env` 或 `--env-file .custom_env` |
 | IMS_UPF_IP 替换污染 | sed 替换 `UPF_IP` 时意外匹配 `IMS_UPF_IP` 子串 | `smf_init.sh` 中先替换带前缀的 `IMS_UPF_IP`，再替换 `UPF_PFCP_IP` |
+
+## IMS 拨号建议
+
+- **优先使用本地短号直拨**：当前实测 `801003` 可稳定走本地 IMS terminating route
+- **谨慎使用 `tel:+...` 格式**：该格式更容易进入 PSTN/ENUM 分支，若现场未配置完整外部 ENUM / PSTN 网关，可能出现呼叫失败或不稳定
+
+## 日志审计与运维
+
+```bash
+# 最近30分钟统一审计
+bash ./system_log_audit.sh
+
+# 审计最近2小时并输出到指定目录
+bash ./system_log_audit.sh 2h /tmp/open5gs_audit
+```
+
+脚本输出内容：
+- `host_snapshot.txt`：容器、路由、关键监听端口快照
+- `summary.txt`：各网元错误/重连/UE状态/IMS事件统计
+- `important_timeline.log`：跨容器关键事件时间线
+
+建议在 **UE 重入网、拨测前后、故障复盘后** 各执行一次，用于快速比较系统状态。
