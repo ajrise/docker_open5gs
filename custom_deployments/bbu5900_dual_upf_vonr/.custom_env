@@ -153,5 +153,11 @@ UE_POLICY_TABLE=245
 UE_POLICY_PRIO_INTERNET=10045
 UE_POLICY_PRIO_IMS=10046
 
+# Multi-homed host stability for dual N3 on same VLAN / subnet
+# ens37: AMF + IMS UPF N3, ens38: eUPF N3
+N3_SUBNET=10.10.10.0/24
+IMS_N3_IF=ens37
+EUPF_N3_IF=ens38
+
 # Maximum Number of UEs
 MAX_NUM_UE=1024
