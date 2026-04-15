@@ -60,6 +60,7 @@
 | `PREPARE_ENV.md` | 文档 | 部署环境准备详细说明 |
 | `PROJECT_STATUS.md` | 文档 | 本次联调成果、问题、修复方式与遗留项总结 |
 | `CONFIRMED_FACTS.md` | 文档 | 截至当前阶段已通过抓包、日志、拨测确认的事实清单 |
+| `ROADMAP.md` | 文档 | 项目整体规划、阶段路线与后续演进方向 |
 | `STATIC_ACCEPTANCE_CHECKLIST.md` | 文档 | 静态验收检查清单 |
 
 > **为什么存在"镜像"文件？** Docker volume mount (`./smf:/mnt/smf`) 是整目录替换，容器内原有文件被遮蔽。因此容器 init 脚本所依赖的辅助文件（`ip_utils.py`、`tun_if.py`、`make_certs.sh`、`smf.conf`）必须在覆盖目录中保留一份副本。
@@ -86,7 +87,7 @@
 
 ## 快速部署
 
-详细环境准备见 [PREPARE_ENV.md](PREPARE_ENV.md)，阶段性成果与遗留问题见 [PROJECT_STATUS.md](PROJECT_STATUS.md)。
+详细环境准备见 [PREPARE_ENV.md](PREPARE_ENV.md)，阶段性成果与遗留问题见 [PROJECT_STATUS.md](PROJECT_STATUS.md)，整体规划与后续路线见 [ROADMAP.md](ROADMAP.md)。
 
 ```bash
 # 1. 拉取镜像
