@@ -59,6 +59,7 @@
 | `upf/tun_if.py`, `upf/ip_utils.py` | 镜像 | 上游副本（Docker volume mount 整目录替换所需） |
 | `PREPARE_ENV.md` | 文档 | 部署环境准备详细说明 |
 | `PROJECT_STATUS.md` | 文档 | 本次联调成果、问题、修复方式与遗留项总结 |
+| `CONFIRMED_FACTS.md` | 文档 | 截至当前阶段已通过抓包、日志、拨测确认的事实清单 |
 | `STATIC_ACCEPTANCE_CHECKLIST.md` | 文档 | 静态验收检查清单 |
 
 > **为什么存在"镜像"文件？** Docker volume mount (`./smf:/mnt/smf`) 是整目录替换，容器内原有文件被遮蔽。因此容器 init 脚本所依赖的辅助文件（`ip_utils.py`、`tun_if.py`、`make_certs.sh`、`smf.conf`）必须在覆盖目录中保留一份副本。
@@ -114,6 +115,7 @@ docker logs --tail=30 eupf  # 确认 XDP on ens38,ens39
 - **internet 数据业务恢复正常**：UE `internet` PDU 会话经 eUPF 转发，地址池为 `10.45.0.0/16`
 - **IMS 业务保持独立承载**：`ims` PDU 会话走 Open5GS UPF，地址池为 `10.46.0.0/16`
 - **VoNR 呼叫已实测成功**：现场以短号 `801003` 直拨，链路完成 `INVITE → 100 Trying → 200 OK → ACK → BYE`
+- **空闲态恢复链已验证可用**：UE 在空闲或被 user-inactivity 释放后，只要有下行业务触发，能够重新恢复业务态
 - **系统审计脚本可用**：已新增 `system_log_audit.sh`，可统一汇总 Open5GS / IMS / eUPF 日志并生成时间线
 
 ## 已验证陷阱
