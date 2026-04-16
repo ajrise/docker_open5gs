@@ -234,13 +234,9 @@ services:
       default:
         ipv4_address: ${UPF_IP}
   amf:
-    build:
-      context: ./amf_tuned_image
-      args:
-        OPEN5GS_BASE_IMAGE: ghcr.io/herlesupreeth/docker_open5gs:master
-        AMF_T3513_DURATION: ${AMF_T3513_DURATION}
-        AMF_T3513_MAX_COUNT: ${AMF_T3513_MAX_COUNT}
-    image: bbu5900-open5gs-amf:latest
+    # 当前阶段撤销定制 AMF 构建，恢复使用上游 Open5GS 镜像。
+    # T3513 放宽实验先保留在仓库中，后续单独验证构建链路与收益后再启用。
+    image: ghcr.io/herlesupreeth/docker_open5gs:master
     depends_on:
       - nrf
       - scp

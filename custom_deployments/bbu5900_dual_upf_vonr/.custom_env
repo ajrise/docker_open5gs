@@ -53,7 +53,8 @@ MME_IP=172.22.0.9
 
 # AMF
 AMF_IP=172.22.0.10
-# BBU5900 idle-resume tolerance: AMF paging retry window
+# 预留参数：用于后续 AMF T3513 放宽实验。
+# 当前阶段已回退到上游 AMF 镜像，以下参数暂不生效，但保留记录。
 AMF_T3513_DURATION=5
 AMF_T3513_MAX_COUNT=6
 
